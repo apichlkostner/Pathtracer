@@ -12,11 +12,6 @@
 #include <random>
 #endif
 
-// Usings
-using std::make_shared;
-using std::shared_ptr;
-using std::sqrt;
-
 // Constants
 
 const double infinity = std::numeric_limits<double>::infinity();
@@ -51,10 +46,5 @@ inline double clamp(double x, double min, double max) {
   if (x > max) return max;
   return x;
 }
-
-// Common Headers
-
-#include "ray.h"
-#include "vec3.h"
 
 #endif

@@ -22,9 +22,9 @@ class ImageWrapper {
 
     // Divide the color total by the number of samples.
     auto scale = 1.0 / samples_per_pixel;
-    r *= scale;
-    g *= scale;
-    b *= scale;
+    r = std::sqrt(scale * r);
+    g = std::sqrt(scale * g);
+    b = std::sqrt(scale * b);
 
     // Write the translated [0,255] value of each color component.
     (*image_)[height_ - 1 - y][x] =

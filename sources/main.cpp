@@ -1,4 +1,6 @@
+#include <algorithm>
 #include <iostream>
+#include <thread>
 
 #include "camera.h"
 #include "color.h"
@@ -6,8 +8,12 @@
 #include "rtweekend.h"
 #include "sphere.h"
 
+int g_seed;
+
 color ray_color(const ray& r, const hittable& world, uint8_t depth) {
   hit_record rec;
+
+  if (depth <= 0) return color(0, 0, 0);
 
   if (world.hit(r, 0.001, infinity, rec)) {
     point3 target = rec.p + rec.normal + random_unit_vector();
@@ -21,11 +27,11 @@ color ray_color(const ray& r, const hittable& world, uint8_t depth) {
 
 int main() {
   constexpr auto aspect_ratio = 16.0 / 9.0;
-  constexpr int image_width = 640;
-  constexpr int image_height = static_cast<int>(image_width / aspect_ratio);
-  constexpr int samples_per_pixel = 100;
+  constexpr size_t image_width = 1024;
+  constexpr size_t image_height = static_cast<int>(image_width / aspect_ratio);
+  constexpr size_t samples_per_pixel = 100;
   constexpr uint8_t max_depth = 50;
-  constexpr uint32_t num_threads = 16;
+  const uint32_t num_threads = 16;
 
   ImageWrapper image("raytrace.png", image_width, image_height);
 
@@ -39,21 +45,41 @@ int main() {
   world.add(std::make_shared<sphere>(point3(0, -100.5, -1), 100));
   camera cam;
 
-  for (int j = image_height - 1; j >= 0; --j) {
-    std::cout << "\rScanlines remaining: " << j << ' ' << std::flush;
-    for (int i = 0; i < image_width; ++i) {
-      color pixel_color(0, 0, 0);
+  std::vector<std::thread> calcthreads;
 
-      for (int s = 0; s < samples_per_pixel; ++s) {
-        auto u = (i + random_double()) / (image_width - 1);
-        auto v = (j + random_double()) / (image_height - 1);
-        ray r = cam.get_ray(u, v);
-        pixel_color += ray_color(r, world, max_depth);
-      }
-
-      image.write_color(i, j, pixel_color, samples_per_pixel);
-    }
+  size_t calc_height_per_thread = image_height / num_threads;
+  if ((image_height % num_threads) > 0) {
+    calc_height_per_thread += 1;
   }
+
+  for (size_t k = 0; k < num_threads; k++) {
+    size_t j_start = k * calc_height_per_thread;
+    size_t end_temp = static_cast<size_t>((k + 1) * calc_height_per_thread);
+    size_t j_end = std::min(end_temp, image_height);
+
+    calcthreads.push_back(std::thread(
+        [j_start, j_end, &cam, &world, &image](int num) mutable {
+          for (size_t j = j_start; j < j_end; j++) {
+            // std::cout << "Thread " << num << " line " << j << std::endl;
+            for (size_t i = 0; i < image_width; ++i) {
+              color pixel_color(0, 0, 0);
+
+              for (size_t s = 0; s < samples_per_pixel; ++s) {
+                auto u = (i + random_double()) / (image_width - 1);
+                auto v = (j + random_double()) / (image_height - 1);
+                ray r = cam.get_ray(u, v);
+                pixel_color += ray_color(r, world, max_depth);
+              }
+
+              image.write_color(i, j, pixel_color, samples_per_pixel);
+            };
+          };
+        },
+        k));
+  }
+
+  for (auto& t : calcthreads) t.join();
+  calcthreads.clear();
 
   image.write();
 

@@ -11,7 +11,7 @@ target_include_directories(raytracing PRIVATE ${PROJECT_SOURCE_DIR}/include
                                 PUBLIC "${PROJECT_BINARY_DIR}"
                            )
 
-target_link_libraries(raytracing png16)
+target_link_libraries(raytracing png16 pthread)
 
 # add the install targets
 install(TARGETS raytracing DESTINATION bin)

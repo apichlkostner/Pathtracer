@@ -5,13 +5,15 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 find_package(png++ REQUIRED)
 
 # add the executable
-add_executable(raytracing main.cpp sphere.cpp hittable_list.cpp vec3.cpp)
+add_executable(raytracing main.cpp sphere.cpp hittable_list.cpp vec3.cpp rtweekend.cpp)
 
 target_include_directories(raytracing PRIVATE ${PROJECT_SOURCE_DIR}/include
                                 PUBLIC "${PROJECT_BINARY_DIR}"
                            )
 
-target_link_libraries(raytracing png16 pthread)
+set(ENV{LD_PRELOAD} /usr/local/lib/libamdlibm.so)
+
+target_link_libraries(raytracing png16 pthread amdlibm)
 
 # add the install targets
 install(TARGETS raytracing DESTINATION bin)

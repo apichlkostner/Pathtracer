@@ -79,8 +79,13 @@ inline vec3 cross(const vec3 &u, const vec3 &v) {
 
 inline vec3 unit_vector(vec3 v) { return v / v.length(); }
 
+inline vec3 reflect(const vec3 &v, const vec3 &n) { return v - 2 * dot(v, n) * n; }
+
+vec3 refract(const vec3 &uv, const vec3 &n, double etai_over_etat);
+
 extern vec3 random_in_unit_sphere();
 extern vec3 random_unit_vector();
-extern vec3 random_in_hemisphere(const vec3& normal);
+extern vec3 random_in_hemisphere(const vec3 &normal);
+extern vec3 random_in_unit_disk();
 
 #endif

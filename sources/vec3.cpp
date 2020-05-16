@@ -1,11 +1,13 @@
 #include "vec3.h"
 
 vec3 random_in_unit_sphere() {
-  while (true) {
-    auto p = vec3::random(-1, 1);
-    if (p.length_squared() >= 1) continue;
-    return p;
-  }
+  vec3 p;
+
+  do {
+    p = vec3::random(-1, 1);
+  } while (p.length_squared() >= 1);
+
+  return p;
 }
 
 vec3 random_unit_vector() {
@@ -21,4 +23,22 @@ vec3 random_in_hemisphere(const vec3& normal) {
     return in_unit_sphere;
   else
     return -in_unit_sphere;
+}
+
+vec3 refract(const vec3& uv, const vec3& n, double etai_over_etat) {
+  auto cos_theta = dot(-uv, n);
+  vec3 r_out_parallel = etai_over_etat * (uv + cos_theta * n);
+  vec3 r_out_perp = -sqrt(1.0 - r_out_parallel.length_squared()) * n;
+
+  return r_out_parallel + r_out_perp;
+}
+
+vec3 random_in_unit_disk() {
+  vec3 p;
+
+  do {
+    p = vec3(random_double(-1, 1), random_double(-1, 1), 0);
+  } while (p.length_squared() > 1);
+
+  return p;
 }

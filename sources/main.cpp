@@ -61,9 +61,7 @@ hittable_list random_scene() {
   }
 
   world.add(std::make_shared<sphere>(point3(0, 1, 0), 1.0, std::make_shared<dielectric>(1.5)));
-
   world.add(std::make_shared<sphere>(point3(-4, 1, 0), 1.0, std::make_shared<lambertian>(color(.4, .2, .1))));
-
   world.add(std::make_shared<sphere>(point3(4, 1, 0), 1.0, std::make_shared<metal>(color(.7, .6, .5), 0.0)));
 
   return world;
@@ -71,23 +69,23 @@ hittable_list random_scene() {
 
 int main() {
   constexpr auto aspect_ratio = 16.0 / 9.0;
-  constexpr size_t image_width = 1024;
+  constexpr size_t image_width = 640;
   constexpr size_t image_height = static_cast<int>(image_width / aspect_ratio);
   constexpr size_t samples_per_pixel = 100;
   constexpr uint8_t max_depth = 50;
   const uint32_t num_threads = std::thread::hardware_concurrency();
 
-  ImageWrapper image("raytrace.png", image_width, image_height);
+  ImageWrapper image("raytrace", image_width, image_height);
 
   point3 lower_left_corner(-2.0, -1.0, -1.0);
   vec3 horizontal(4.0, 0.0, 0.0);
   vec3 vertical(0.0, 2.0, 0.0);
   point3 origin(0.0, 0.0, 0.0);
 
-  std::shared_ptr<lambertian> mat_lambertian = std::make_shared<lambertian>(color({0.5, 0.5, 1.0}));
-  std::shared_ptr<metal> mat_metal = std::make_shared<metal>(color({1.0, 0.5, 0.5}));
-  std::shared_ptr<metal> mat_metal_fuz = std::make_shared<metal>(color({1.0, 0.5, 0.5}), 0.5);
-  std::shared_ptr<dielectric> mat_dielectric = std::make_shared<dielectric>(1.5);
+  // std::shared_ptr<lambertian> mat_lambertian = std::make_shared<lambertian>(color({0.5, 0.5, 1.0}));
+  // std::shared_ptr<metal> mat_metal = std::make_shared<metal>(color({1.0, 0.5, 0.5}));
+  // std::shared_ptr<metal> mat_metal_fuz = std::make_shared<metal>(color({1.0, 0.5, 0.5}), 0.5);
+  // std::shared_ptr<dielectric> mat_dielectric = std::make_shared<dielectric>(1.5);
 
   // hittable_list world;
   // world.add(std::make_shared<sphere>(point3(0, 0, -1), 0.5, std::make_shared<lambertian>(color(.1, .2, .5))));

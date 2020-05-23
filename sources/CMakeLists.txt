@@ -26,7 +26,7 @@ endif()
 
 if (png++_FOUND)
      add_definitions(-DUSE_PNG)
-     target_link_libraries(raytracing png16)
+     target_link_libraries(raytracing ${png++_LIBRARIES})
      message(INFO " Using png++")
 else()
      message(INFO " Using P3")
@@ -34,9 +34,8 @@ endif()
 
 target_link_libraries(raytracing pthread)
 
-target_compile_options(raytracing PRIVATE -Wall -Wextra -Wpedantic)
-target_compile_options(raytracing PRIVATE $<$<CXX_COMPILER_ID:GNU>:-march=native>
-                                  PRIVATE $<$<CXX_COMPILER_ID:GNU>:-ffast-math>)
+target_compile_options(raytracing PRIVATE -Wall -Wextra -Wpedantic -march=native -ffast-math)
+#target_compile_options(raytracing PRIVATE $<$<CXX_COMPILER_ID:GNU>:-ffast-math>)
 
 # add the install targets
 install(TARGETS raytracing DESTINATION bin)

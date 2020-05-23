@@ -12,10 +12,11 @@ class material {
 class lambertian : public material {
  public:
   lambertian(const color& a) : albedo(a) {}
+  virtual ~lambertian() {};
 
   virtual bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const {
     static_cast<void>(r_in); // not used
-    
+
     vec3 scatter_direction = rec.normal + random_unit_vector();
     scattered = ray(rec.p, scatter_direction);
     attenuation = albedo;
@@ -29,6 +30,8 @@ class lambertian : public material {
 class metal : public material {
  public:
   metal(const color& a, double f = 0.) : albedo(a), fuzz(f < 1 ? f : 1) {}
+  virtual ~metal() {};
+
   virtual bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const {
     vec3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
     scattered = ray(rec.p, reflected + fuzz * random_in_unit_sphere());
@@ -50,6 +53,7 @@ double schlick(double cosine, double ref_idx) {
 class dielectric : public material {
  public:
   dielectric(double ri) : ref_idx(ri) {}
+  virtual ~dielectric() {};
 
   virtual bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const {
     attenuation = color(1.0, 1.0, 1.0);

@@ -40,6 +40,7 @@ find_path(png++_INCLUDE_DIR
         png++/require_color_space.hpp
         png++/rgb_pixel.hpp
         png++/rgba_pixel.hpp
+        png++/solid_pixel_buffer.hpp
         png++/streaming_base.hpp
         png++/tRNS.hpp
         png++/types.hpp
@@ -49,13 +50,10 @@ find_path(png++_INCLUDE_DIR
     PATH_SUFFIXES
         src)
 
-set(png++_INCLUDE_DIRS ${png++_INCLUDE_DIR} ${PNG_INCLUDE_DIRS})
-set(png++_LIBRARIES ${PNG_LIBRARIES})
-
 find_package_handle_standard_args(png++ DEFAULT_MSG
     png++_INCLUDE_DIR)
 
 if(png++_FOUND)
     set(png++_INCLUDE_DIRS ${png++_INCLUDE_DIR})
-    set(png++_LIBRARIES ${png++_LIBRARY})
+    set(png++_LIBRARIES ${PNG_LIBRARIES})
 endif()

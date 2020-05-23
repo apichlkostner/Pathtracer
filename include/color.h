@@ -22,7 +22,9 @@ const std::string image_filename_postfix = ".p3";
 class ImageWrapper {
  public:
   ImageWrapper(std::string filename, uint32_t width, uint32_t height)
-      : image_(std::make_unique<image_type>(width, height)), width_(width), height_(height), filename_(filename) {}
+      : image_(std::make_unique<image_type>(width, height)), width_(width), height_(height), filename_(filename) {
+    static_cast<void>(width_); // not used, warning by clang
+  }
 
   void write_color(uint32_t x, uint32_t y, color pixel_color, int samples_per_pixel) {
     auto r = pixel_color.x();

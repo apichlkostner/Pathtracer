@@ -37,7 +37,6 @@ hittable_list random_scene() {
 
   world.add(std::make_shared<sphere>(point3(0, -1000, 0), 1000, std::make_shared<lambertian>(color(0.5, 0.5, 0.5))));
 
-  int i = 1;
   for (int a = -11; a < 11; a++) {
     for (int b = -11; b < 11; b++) {
       auto choose_mat = random_double();
@@ -118,6 +117,7 @@ int main() {
 
     calcthreads.push_back(std::thread(
         [j_start, j_end, &cam, &world, &image](int num) mutable {
+          static_cast<void>(num); // currently not used
           for (size_t j = j_start; j < j_end; j++) {
             // std::cout << "Thread " << num << " line " << j << std::endl;
             for (size_t i = 0; i < image_width; ++i) {

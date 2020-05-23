@@ -14,6 +14,8 @@ class lambertian : public material {
   lambertian(const color& a) : albedo(a) {}
 
   virtual bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const {
+    static_cast<void>(r_in); // not used
+    
     vec3 scatter_direction = rec.normal + random_unit_vector();
     scattered = ray(rec.p, scatter_direction);
     attenuation = albedo;

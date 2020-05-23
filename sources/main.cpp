@@ -21,7 +21,7 @@ color ray_color(const ray& r, const hittable& world, uint8_t depth) {
     color attenuation;
     ray scattered;
     if (rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {
-      return attenuation * ray_color(scattered, world, depth - 1);
+      return attenuation.cwiseProduct(ray_color(scattered, world, depth - 1));
     } else {
       return color(0, 0, 0);
     }
@@ -42,14 +42,14 @@ hittable_list random_scene() {
     for (int b = -11; b < 11; b++) {
       auto choose_mat = random_double();
       point3 center(a + 0.9 * random_double(), 0.2, b + 0.9 * random_double());
-      if ((center - vec3(4, 0.2, 0)).length() > 0.9) {
+      if ((center - vec3(4, 0.2, 0)).norm() > 0.9) {
         if (choose_mat < 0.8) {
           // diffuse
-          auto albedo = color::random() * color::random();
+          auto albedo = random_vec3().cwiseProduct(random_vec3());
           world.add(std::make_shared<sphere>(center, 0.2, std::make_shared<lambertian>(albedo)));
         } else if (choose_mat < 0.95) {
           // metal
-          auto albedo = color::random(.5, 1);
+          auto albedo = random_vec3(.5, 1);
           auto fuzz = random_double(0, .5);
           world.add(std::make_shared<sphere>(center, 0.2, std::make_shared<metal>(albedo, fuzz)));
         } else {

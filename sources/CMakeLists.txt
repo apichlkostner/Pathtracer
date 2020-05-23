@@ -3,13 +3,7 @@ cmake_minimum_required(VERSION 3.5)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 find_package(png++)
-
-if (png++_FOUND)
-     add_definitions(-DUSE_PNG)
-     message(INFO " Using png++")
-else()
-     message(INFO " Using P3")
-endif()
+find_package (Eigen3 3.3 NO_MODULE)
 
 # add the executable
 add_executable(raytracing main.cpp sphere.cpp hittable_list.cpp vec3.cpp rtweekend.cpp)
@@ -24,11 +18,23 @@ if(EXISTS ${AMD_MATHLIB})
      target_link_libraries(raytracing amdlibm)
 endif()
 
+if (Eigen3_FOUND)
+     add_definitions(-DUSE_EIGEN)
+     target_link_libraries(raytracing Eigen3::Eigen)
+     message(INFO " Using Eigen library")
+endif()
+
 if (png++_FOUND)
+     add_definitions(-DUSE_PNG)
      target_link_libraries(raytracing png16)
+     message(INFO " Using png++")
+else()
+     message(INFO " Using P3")
 endif()
 
 target_link_libraries(raytracing pthread)
+
+target_compile_options(raytracing PRIVATE "-march=native" "-ffast-math")
 
 # add the install targets
 install(TARGETS raytracing DESTINATION bin)

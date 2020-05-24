@@ -11,8 +11,8 @@
 
 using vec3 = Eigen::Vector3d;
 
+inline vec3 unit_vector(vec3 v) { return v.normalized(); }
 inline double dot(const vec3 &u, const vec3 &v) { return u.dot(v); }
-
 inline vec3 cross(const vec3 &u, const vec3 &v) { return u.cross(v); }
 #else
 class vec3 {
@@ -50,7 +50,7 @@ class vec3 {
 
   double squaredNorm() const { return e[0] * e[0] + e[1] * e[1] + e[2] * e[2]; }
 
- public:
+  public:
   double e[3];
 };
 
@@ -71,6 +71,10 @@ inline double dot(const vec3 &u, const vec3 &v) { return u.e[0] * v.e[0] + u.e[1
 inline vec3 cross(const vec3 &u, const vec3 &v) {
   return vec3(u.e[1] * v.e[2] - u.e[2] * v.e[1], u.e[2] * v.e[0] - u.e[0] * v.e[2], u.e[0] * v.e[1] - u.e[1] * v.e[0]);
 }
+
+inline std::ostream &operator<<(std::ostream &out, const vec3 &v) { return out << v[0] << ' ' << v[1] << ' ' << v[2]; }
+
+inline vec3 unit_vector(vec3 v) { return v / v.norm(); }
 #endif
 
 // Type aliases for vec3
@@ -78,11 +82,6 @@ using point3 = vec3;  // 3D point
 using color = vec3;   // RGB color
 
 // vec3 Utility Functions
-
-inline std::ostream &operator<<(std::ostream &out, const vec3 &v) { return out << v[0] << ' ' << v[1] << ' ' << v[2]; }
-
-inline vec3 unit_vector(vec3 v) { return v / v.norm(); }
-
 inline vec3 reflect(const vec3 &v, const vec3 &n) { return v - 2 * dot(v, n) * n; }
 
 vec3 refract(const vec3 &uv, const vec3 &n, double etai_over_etat);

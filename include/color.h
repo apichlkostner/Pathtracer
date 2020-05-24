@@ -27,9 +27,9 @@ class ImageWrapper {
   }
 
   void write_color(uint32_t x, uint32_t y, color pixel_color, int samples_per_pixel) {
-    auto r = pixel_color.x();
-    auto g = pixel_color.y();
-    auto b = pixel_color.z();
+    auto r = pixel_color[0];
+    auto g = pixel_color[1];
+    auto b = pixel_color[2];
 
     // Divide the color total by the number of samples.
     auto scale = 1.0 / samples_per_pixel;

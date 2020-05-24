@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <chrono>
+#include <iomanip>
 #include <iostream>
 #include <thread>
 
@@ -44,7 +46,7 @@ hittable_list random_scene() {
       if ((center - vec3(4, 0.2, 0)).norm() > 0.9) {
         if (choose_mat < 0.8) {
           // diffuse
-          auto albedo = random_vec3().cwiseProduct(random_vec3());
+          vec3 albedo = random_vec3().cwiseProduct(random_vec3());
           world.add(std::make_shared<sphere>(center, 0.2, std::make_shared<lambertian>(albedo)));
         } else if (choose_mat < 0.95) {
           // metal
@@ -68,30 +70,16 @@ hittable_list random_scene() {
 
 int main() {
   constexpr auto aspect_ratio = 16.0 / 9.0;
-  constexpr size_t image_width = 640;
+  constexpr size_t image_width = 1280;
   constexpr size_t image_height = static_cast<int>(image_width / aspect_ratio);
   constexpr size_t samples_per_pixel = 100;
   constexpr uint8_t max_depth = 50;
   const uint32_t num_threads = std::thread::hardware_concurrency();
 
-  ImageWrapper image("raytrace", image_width, image_height);
-
   point3 lower_left_corner(-2.0, -1.0, -1.0);
   vec3 horizontal(4.0, 0.0, 0.0);
   vec3 vertical(0.0, 2.0, 0.0);
   point3 origin(0.0, 0.0, 0.0);
-
-  // std::shared_ptr<lambertian> mat_lambertian = std::make_shared<lambertian>(color({0.5, 0.5, 1.0}));
-  // std::shared_ptr<metal> mat_metal = std::make_shared<metal>(color({1.0, 0.5, 0.5}));
-  // std::shared_ptr<metal> mat_metal_fuz = std::make_shared<metal>(color({1.0, 0.5, 0.5}), 0.5);
-  // std::shared_ptr<dielectric> mat_dielectric = std::make_shared<dielectric>(1.5);
-
-  // hittable_list world;
-  // world.add(std::make_shared<sphere>(point3(0, 0, -1), 0.5, std::make_shared<lambertian>(color(.1, .2, .5))));
-  // world.add(std::make_shared<sphere>(point3(0, -100.5, -1), 100, std::make_shared<lambertian>(color(.8, .8, 0.))));
-  // world.add(std::make_shared<sphere>(point3(1, 0, -1), 0.5, std::make_shared<metal>(color(.8, .6, .2), 0.3)));
-  // world.add(std::make_shared<sphere>(point3(-1, 0, -1), 0.5, std::make_shared<dielectric>(1.5)));
-  // world.add(std::make_shared<sphere>(point3(-1, 0, -1), -0.45, std::make_shared<dielectric>(1.5)));
 
   auto world = random_scene();
 
@@ -101,46 +89,67 @@ int main() {
   auto dist_to_focus = 10.0;
   auto aperture = 0.1;
 
-  camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
+  constexpr double rotation_angle_delta = 0.01;
+#ifdef USE_EIGEN
+  size_t rotation_number = size_t(M_PI / rotation_angle_delta);
+#else
+  size_t rotation_number = 1;
+#endif
 
-  std::vector<std::thread> calcthreads;
+  size_t image_number = 0;
+  while (image_number < rotation_number) {
+    std::vector<std::thread> calcthreads;
 
-  size_t calc_height_per_thread = image_height / num_threads;
-  if ((image_height % num_threads) > 0) {
-    calc_height_per_thread += 1;
-  }
+    for (size_t thread_nr = 0; (thread_nr < num_threads) && (image_number < rotation_number); thread_nr++) {
+      image_number++;
+      calcthreads.push_back(std::thread(
+          [image_number, &lookfrom, &lookat, &vup, &world, aperture, rotation_number, dist_to_focus,
+           num_threads](size_t thread_nr) mutable {
+            auto start_time = std::chrono::high_resolution_clock::now();
+#ifdef USE_EIGEN
+            Eigen::AngleAxis<double> rotation(image_number * rotation_angle_delta, vec3(0, 1., 0));
+            camera cam(rotation * lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
+#else
+            camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
+#endif
 
-  for (size_t k = 0; k < num_threads; k++) {
-    size_t j_start = k * calc_height_per_thread;
-    size_t end_temp = static_cast<size_t>((k + 1) * calc_height_per_thread);
-    size_t j_end = std::min(end_temp, image_height);
+            std::string image_filename = "raytrace" + std::to_string(image_number);
+            ImageWrapper image(image_filename, image_width, image_height);
 
-    calcthreads.push_back(std::thread(
-        [j_start, j_end, &cam, &world, &image](int num) mutable {
-          static_cast<void>(num); // currently not used
-          for (size_t j = j_start; j < j_end; j++) {
-            // std::cout << "Thread " << num << " line " << j << std::endl;
-            for (size_t i = 0; i < image_width; ++i) {
-              color pixel_color(0, 0, 0);
-
-              for (size_t s = 0; s < samples_per_pixel; ++s) {
-                auto u = (i + random_double()) / (image_width - 1);
-                auto v = (j + random_double()) / (image_height - 1);
-                ray r = cam.get_ray(u, v);
-                pixel_color += ray_color(r, world, max_depth);
+            for (size_t j = 0; j < image_height; j++) {
+              if (thread_nr == 0) {
+                std::cout << "Line " << j << " / " << image_height << "\r" << std::flush;
               }
+              for (size_t i = 0; i < image_width; ++i) {
+                color pixel_color(0, 0, 0);
 
-              image.write_color(i, j, pixel_color, samples_per_pixel);
+                for (size_t s = 0; s < samples_per_pixel; ++s) {
+                  auto u = (i + random_double()) / (image_width - 1);
+                  auto v = (j + random_double()) / (image_height - 1);
+                  ray r = cam.get_ray(u, v);
+                  pixel_color += ray_color(r, world, max_depth);
+                }
+
+                image.write_color(i, j, pixel_color, samples_per_pixel);
+              };
             };
-          };
-        },
-        k));
+
+            image.write();
+
+            auto stop_time = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> calc_time = stop_time - start_time;
+            auto finished_in = calc_time.count() * (rotation_number - image_number) / num_threads;
+            std::cout << "Finished " << image_number << " of " << rotation_number << " -> " << std::fixed
+                      << std::setprecision(3) << std::setfill('0') << calc_time.count() << "s, finished in "
+                      << std::setprecision(1) << finished_in << "s == " << finished_in / 60.
+                      << "m == " << finished_in / 3600. << "h" << std::endl;
+          },
+          thread_nr));
+    }
+    for (auto& t : calcthreads) t.join();
+    calcthreads.clear();
   }
-
-  for (auto& t : calcthreads) t.join();
-  calcthreads.clear();
-
-  image.write();
-
-  std::cout << "\nDone.\n";
+  std::cout << "\nDone.\nYou can make a video with ffmpeg -r 60 -i raytrace%d.png -vcodec libx264 -crf 15 -pix_fmt "
+               "yuv420p raytrace.mp4 if you like."
+            << std::endl;
 }

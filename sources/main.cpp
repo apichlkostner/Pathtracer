@@ -15,9 +15,9 @@
 
 static void log(double delta_time, size_t image_number, size_t num_rotation_steps) {
   double finished_in = delta_time * (num_rotation_steps - image_number);
-  std::cout << "Finished " << image_number << " of " << num_rotation_steps << " -> " << std::fixed << std::setprecision(3)
-            << std::setfill('0') << delta_time << "s, finished in " << std::setprecision(1) << finished_in
-            << "s == " << finished_in / 60. << "m == " << finished_in / 3600. << "h" << std::endl;
+  std::cout << "Finished " << image_number << " of " << num_rotation_steps << " -> calc time " << std::fixed << std::setprecision(3)
+            << std::setfill('0') << delta_time << "s, sequence will be finished in " << std::setprecision(1) << finished_in
+            << "s == " << finished_in / 60. << "m == " << finished_in / 3600. << "h\r" << std::flush;
 }
 
 int main() {
@@ -28,20 +28,20 @@ int main() {
   constexpr uint8_t max_depth = 50;
   // const uint32_t num_threads = std::thread::hardware_concurrency();
 
-  point3 lower_left_corner(-2.0, -1.0, -1.0);
-  vec3 horizontal(4.0, 0.0, 0.0);
-  vec3 vertical(0.0, 2.0, 0.0);
-  point3 origin(0.0, 0.0, 0.0);
+  const point3 lower_left_corner(-2.0, -1.0, -1.0);
+  const vec3 horizontal(4.0, 0.0, 0.0);
+  const vec3 vertical(0.0, 2.0, 0.0);
+  const point3 origin(0.0, 0.0, 0.0);
 
-  hittable_list world = randomWorld::generate_random_scene();
+  const hittable_list world = randomWorld::generate_random_scene();
 
-  point3 lookfrom(13., 2., 3.);
-  point3 lookat(0, 0, 0);
-  vec3 vup(0, 1, 0);
-  double dist_to_focus = 10.0;
-  double aperture = 0.1;
+  const point3 lookfrom(13., 2., 3.);
+  const point3 lookat(0, 0, 0);
+  const vec3 vup(0, 1, 0);
+  constexpr double dist_to_focus = 10.0;
+  constexpr double aperture = 0.1;
 
-  raytrace raytracer(world, aspect_ratio, image_width, image_height, samples_per_pixel, max_depth, 1);
+  raytrace raytracer(world, image_width, image_height, samples_per_pixel, max_depth);
 
   constexpr double rotation_angle_delta = 0.01;
 #ifdef USE_EIGEN
@@ -60,7 +60,7 @@ int main() {
     camera cam(rotation * lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
     std::string image_filename = "raytrace" + std::to_string(image_number);
 
-    ImageWrapper image = raytracer.calcImage(cam, samples_per_pixel, image_filename, false);
+    ImageWrapper image = raytracer.calcImage(cam, image_filename, false);
 
     image.write();
 

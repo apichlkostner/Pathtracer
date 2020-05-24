@@ -10,28 +10,25 @@
 
 class raytrace {
  public:
-  raytrace(hittable_list world, double aspect_ratio, size_t image_width, size_t image_height, size_t samples_per_pixel,
-           uint8_t max_depth, uint32_t num_threads)
+  raytrace(hittable_list world, size_t image_width, size_t image_height, size_t samples_per_pixel, uint8_t max_depth)
       : world_(world),
-        aspect_ratio_(aspect_ratio),
         image_width_(image_width),
         image_height_(image_height),
         samples_per_pixel_(samples_per_pixel),
-        max_depth_(max_depth),
-        num_threads_(num_threads) {}
+        max_depth_(max_depth) {}
 
-  ImageWrapper calcImage(const camera& cam, size_t samples_per_pixel, std::string image_filename, bool do_log) {
+  ImageWrapper calcImage(const camera& cam, std::string image_filename, bool do_log) {
     ImageWrapper image(image_filename, image_width_, image_height_);
 
-    #pragma omp parallel for
+#pragma omp parallel for
     for (size_t j = 0; j < image_height_; j++) {
       if (do_log) {
         std::cout << "Line " << j << " / " << image_height_ << "\r" << std::flush;
       }
       for (size_t i = 0; i < image_width_; ++i) {
-        color pixel_color = calcPixel(cam, i, j, samples_per_pixel);
+        color pixel_color = calcPixel(cam, i, j, samples_per_pixel_);
 
-        image.write_color(i, j, pixel_color, samples_per_pixel);
+        image.write_color(i, j, pixel_color, samples_per_pixel_);
       };
     };
 
@@ -73,12 +70,10 @@ class raytrace {
 
  private:
   hittable_list world_;
-  double aspect_ratio_;
   size_t image_width_;
   size_t image_height_;
   size_t samples_per_pixel_;
   uint8_t max_depth_;
-  uint32_t num_threads_;
 };
 
 #endif

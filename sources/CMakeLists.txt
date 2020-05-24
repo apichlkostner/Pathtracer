@@ -4,9 +4,10 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 find_package(png++)
 find_package (Eigen3 3.3 NO_MODULE)
+find_package(OpenMP)
 
 # add the executable
-add_executable(raytracing main.cpp sphere.cpp hittable_list.cpp vec3.cpp rtweekend.cpp)
+add_executable(raytracing main.cpp sphere.cpp hittable_list.cpp vec3.cpp rtweekend.cpp random_world.cpp material.cpp)
 
 target_include_directories(raytracing PRIVATE ${PROJECT_SOURCE_DIR}/include
                                 PUBLIC "${PROJECT_BINARY_DIR}"
@@ -30,6 +31,10 @@ if (png++_FOUND)
      message(INFO " Using png++")
 else()
      message(INFO " Using P3")
+endif()
+
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(raytracing OpenMP::OpenMP_CXX)
 endif()
 
 target_link_libraries(raytracing pthread)

@@ -2,14 +2,14 @@
 
 bool sphere::hit(const ray& r, double t_min, double t_max, hit_record& rec) const {
   vec3 oc = r.origin() - center;
-  auto a = r.direction().squaredNorm();
-  auto half_b = dot(oc, r.direction());
-  auto c = oc.squaredNorm() - radius * radius;
-  auto discriminant = half_b * half_b - a * c;
+  double a = r.direction().squaredNorm();
+  double half_b = dot(oc, r.direction());
+  double c = oc.squaredNorm() - radius * radius;
+  double discriminant = half_b * half_b - a * c;
 
   if (discriminant > 0) {
-    auto root = sqrt(discriminant);
-    auto temp = (-half_b - root) / a;
+    double root = sqrt(discriminant);
+    double temp = (-half_b - root) / a;
     if (temp < t_max && temp > t_min) {
       rec.t = temp;
       rec.p = r.at(rec.t);

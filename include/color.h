@@ -27,12 +27,12 @@ class ImageWrapper {
   }
 
   void write_color(uint32_t x, uint32_t y, color pixel_color, int samples_per_pixel) {
-    auto r = pixel_color[0];
-    auto g = pixel_color[1];
-    auto b = pixel_color[2];
+    double r = pixel_color[0];
+    double g = pixel_color[1];
+    double b = pixel_color[2];
 
     // Divide the color total by the number of samples.
-    auto scale = 1.0 / samples_per_pixel;
+    double scale = 1.0 / samples_per_pixel;
     r = std::sqrt(scale * r);
     g = std::sqrt(scale * g);
     b = std::sqrt(scale * b);

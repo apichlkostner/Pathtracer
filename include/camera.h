@@ -12,9 +12,9 @@ class camera {
     origin = lookfrom;
     lens_radius = aperture / 2;
 
-    auto theta = degrees_to_radians(vfov);
-    auto half_height = tan(theta / 2);
-    auto half_width = aspect_ratio * half_height;
+    double theta = degrees_to_radians(vfov);
+    double half_height = tan(theta / 2);
+    double half_width = aspect_ratio * half_height;
 
     w = unit_vector(lookfrom - lookat);
     u = unit_vector(cross(vup, w));
